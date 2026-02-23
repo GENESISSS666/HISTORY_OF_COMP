@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis: Pro Evolution</title>
+    <style>
+        body { margin: 0; background: #dcdcdc; overflow: hidden; font-family: 'Courier New', monospace; color: #1a1a1a; }
+        #interface { position: absolute; top: 40px; left: 40px; pointer-events: none; z-index: 100; }
+        .header { border-left: 10px solid #000; padding-left: 20px; }
+        .title { font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; }
+        .status-box { margin-top: 30px; background: rgba(255,255,255,0.7); padding: 15px; border: 1px solid #bbb; width: 350px; backdrop-filter: blur(5px); }
+        #info-text { font-size: 13px; line-height: 1.5; color: #333; min-height: 80px; }
+        .controls-hint { position: absolute; bottom: 40px; right: 40px; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div id="interface">
+        <div class="header">
+            <p class="title">Genesis Device</p>
+            <p style="margin:0; opacity:0.6;">Hardware Evolution Finalized</p>
+        </div>
+        <div class="status-box">
+            <p style="margin:0 0 10px 0; font-weight:bold; border-bottom:1px solid #000;">SYSTEM STATUS</p>
+            <div id="info-text">Sequence Ready. Press [→] to begin.</div>
+        </div>
+    </div>
+    <div class="controls-hint">ARROWS: EVOLVE/REVERT | MOUSE: INSPECT</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xdcdcdc);
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(10, 10, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const viewControls = new THREE.OrbitControls(camera, renderer.domElement);
+        viewControls.enableDamping = true;
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        mainLight.position.set(5, 15, 10);
+        scene.add(mainLight);
+
+        const mainParts = new THREE.Group();
+        const deviceFinal = new THREE.Group();
+        scene.add(mainParts, deviceFinal);
+
+        const goldMat = new THREE.MeshStandardMaterial({color: 0xd4af37, metalness: 1, roughness: 0.2});
+
+        const baseFrame = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.5, 8.5), new THREE.MeshStandardMaterial({color: 0x1a1a1a, metalness: 0.8}));
+        baseFrame.visible = false; 
+        mainParts.add(baseFrame);
+
+        const pcb = new THREE.Group();
+        pcb.add(new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 7.5), new THREE.MeshStandardMaterial({color: 0x0a2e16})));
+        for(let i=0; i<60; i++) {
+            const path = new THREE.Mesh(new THREE.PlaneGeometry(0.04, Math.random()*2+0.5), goldMat);
+            path.rotation.x = -Math.PI/2;
+            path.position.set(Math.random()*3.6-1.8, 0.06, Math.random()*6.5-3.25);
+            pcb.add(path);
+        }
+        for(let i=0; i<25; i++) {
+            const comp = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.2), new THREE.MeshStandardMaterial({color: 0x111}));
+            comp.position.set(Math.random()*3.4-1.7, 0.1, Math.random()*6-3);
+            pcb.add(comp);
+        }
+        pcb.position.y = 0.4; 
+        pcb.visible = false; 
+        mainParts.add(pcb);
+
+        const coreElements = new THREE.Group();
+        for(let i=0; i<8; i++) {
+            const unit = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.3), new THREE.MeshStandardMaterial({color: 0x990000}));
+            unit.position.set(Math.random()*2-1, 0.7, Math.random()*4-2); 
+            coreElements.add(unit);
+        }
+        coreElements.visible = false; 
+        mainParts.add(coreElements);
+
+        const comms = new THREE.Mesh(new THREE.BoxGeometry(0.4, 3, 0.4), new THREE.MeshBasicMaterial({color: 0x00ffcc, wireframe: true}));
+        comms.position.set(1.5, 1.5, -2); 
+        comms.visible = false; 
+        mainParts.add(comms);
+
+        const processor = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.3, 1.4), goldMat);
+        processor.position.set(-0.8, 0.6, 1.2); 
+        processor.visible = false; 
+        mainParts.add(processor);
+
+        const glassLayer = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.05, 8.4), new THREE.MeshStandardMaterial({color: 0x000, transparent:true, opacity:0.8}));
+        glassLayer.position.y = 0.9; 
+        glassLayer.visible = false; 
+        mainParts.add(glassLayer);
+
+        const smartphone = new THREE.Group();
+        const bodyShell = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.6, 8.6), new THREE.MeshStandardMaterial({color: 0x111, metalness:0.9}));
+        
+        const uiCanvas = document.createElement('canvas');
+        uiCanvas.width = 512; uiCanvas.height = 1024;
+        const ctx = uiCanvas.getContext('2d');
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,512,1024);
+        
+        const palette = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#FF6D00', '#00ACC1', '#673AB7', '#E91E63', '#795548'];
+        for(let i=0; i<9; i++) {
+            ctx.fillStyle = palette[i % palette.length];
+            const posX = 65 + (i % 3) * 145;
+            const posY = 250 + Math.floor(i / 3) * 160;
+            ctx.beginPath();
+            ctx.roundRect(posX, posY, 95, 95, 20);
+            ctx.fill();
+        }
+
+        const screen = new THREE.Mesh(
+            new THREE.PlaneGeometry(4.4, 8.4),
+            new THREE.MeshStandardMaterial({map: new THREE.CanvasTexture(uiCanvas), emissive: 0xffffff, emissiveIntensity: 0.3})
+        );
+        screen.rotation.x = -Math.PI/2; 
+        screen.position.y = 0.31;
+        smartphone.add(bodyShell, screen);
+        smartphone.visible = false; 
+        deviceFinal.add(smartphone);
+
+        let activeStep = 0;
+        const data = [
+            { txt: "SYSTEM STANDBY. Ready for synthesis.", obj: null },
+            { txt: "STEP 1: THE CHASSIS - Mechanical Origins (2700 BC – 1642). From ancient bead-and-rod tools to the Pascaline, humanity proved that mental labor could be outsourced to physical devices.", obj: baseFrame },
+            { txt: "STEP 2: MOTHERBOARD - The Blueprint for Logic: The Analytical Engine (1837). Charles Babbage envisioned a steam-powered giant. This was the first true computer design, setting the stage for programmable machines.", obj: pcb },
+            { txt: "STEP 3: TRANSISTORS - The Foundations of Computation: Turing and ENIAC (1936 – 1945). Alan Turing proved simple rules could solve any problem. ENIAC replaced physical gears with lightning-fast vacuum tubes.", obj: coreElements },
+            { txt: "STEP 4: TELEMETRY - The Silicon Revolution: The Transistor (1947). This tiny switch acted as the Big Bang for electronics, allowing computers to shrink from massive halls into portable devices.", obj: comms },
+            { txt: "STEP 5: CPU CORE - Connecting the World: ARPANET and the WWW (1969 – 1989). Computers first spoke to each other via ARPANET, turning a technical experiment into a global library that democratized information.", obj: processor },
+            { txt: "STEP 6: INTERFACE GLASS - The Personal Computing Milestone: The IBM PC (1981). IBM took technology out of the research lab and placed it on the desk, transforming the computer into a household staple.", obj: glassLayer },
+            { txt: "STEP 7: FINAL DEVICE - The Intelligence Era: Modern AI (Present). We have evolved from machines that follow orders to machines that learn patterns. A new partnership between human intuition and machine code.", obj: smartphone }
+        ];
+
+        function handleTransition(mode) {
+            if (mode === "next") {
+                if (activeStep >= data.length - 1) return;
+                activeStep++;
+                const current = data[activeStep];
+                if (activeStep === 7) {
+                    gsap.to(mainParts.position, { y: -20, duration: 1.2, ease: "power2.in", onComplete: () => mainParts.visible = false });
+                    current.obj.visible = true;
+                    gsap.from(current.obj.position, { y: 20, duration: 1.5, ease: "expo.out" });
+                } else {
+                    current.obj.visible = true;
+                    gsap.from(current.obj.position, { y: 15, duration: 1, ease: "power2.out" });
+                }
+            } else {
+                if (activeStep <= 0) return;
+                if (activeStep === 7) {
+                    mainParts.visible = true;
+                    gsap.to(mainParts.position, { y: 0, duration: 1 });
+                    data[activeStep].obj.visible = false;
+                } else {
+                    data[activeStep].obj.visible = false;
+                }
+                activeStep--;
+            }
+            document.getElementById('info-text').innerText = data[activeStep].txt;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight') handleTransition("next");
+            if(e.key === 'ArrowLeft') handleTransition("back");
+        });
+
+        function run() {
+            requestAnimationFrame(run);
+            viewControls.update();
+            mainParts.rotation.y += 0.002;
+            deviceFinal.rotation.y += 0.004;
+            renderer.render(scene, camera);
+        }
+        run();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; 
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
