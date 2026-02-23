@@ -2,30 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Genesis: Pro Evolution</title>
     <style>
-        body { margin: 0; background: #dcdcdc; overflow: hidden; font-family: 'Courier New', monospace; color: #1a1a1a; }
-        #interface { position: absolute; top: 40px; left: 40px; pointer-events: none; z-index: 100; }
+        body { margin: 0; background: #dcdcdc; overflow: hidden; font-family: 'Courier New', monospace; color: #1a1a1a; touch-action: none; }
+        #interface { position: absolute; top: 20px; left: 20px; pointer-events: none; z-index: 100; }
         .header { border-left: 10px solid #000; padding-left: 20px; }
-        .title { font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; }
-        .status-box { margin-top: 30px; background: rgba(255,255,255,0.7); padding: 15px; border: 1px solid #bbb; width: 350px; backdrop-filter: blur(5px); }
-        #info-text { font-size: 13px; line-height: 1.5; color: #333; min-height: 80px; }
-        .controls-hint { position: absolute; bottom: 40px; right: 40px; font-weight: bold; font-size: 12px; }
+        .title { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; }
+        .status-box { margin-top: 20px; background: rgba(255,255,255,0.7); padding: 15px; border: 1px solid #bbb; width: 280px; max-width: 70vw; backdrop-filter: blur(5px); }
+        #info-text { font-size: 11px; line-height: 1.4; color: #333; min-height: 80px; }
+        .controls-hint { position: absolute; bottom: 20px; right: 20px; font-weight: bold; font-size: 10px; text-align: right; }
+        
+        /* Zonas táctiles para celular */
+        .touch-trigger { position: absolute; top: 0; width: 25%; height: 100%; z-index: 150; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        #touch-left { left: 0; }
+        #touch-right { right: 0; }
     </style>
 </head>
 <body>
+    <div id="touch-left" class="touch-trigger" onclick="handleTransition('back')"></div>
+    <div id="touch-right" class="touch-trigger" onclick="handleTransition('next')"></div>
+
     <div id="interface">
         <div class="header">
             <p class="title">Genesis Device</p>
-            <p style="margin:0; opacity:0.6;">Hardware Evolution Finalized</p>
+            <p style="margin:0; opacity:0.6; font-size: 10px;">Hardware Evolution Finalized</p>
         </div>
         <div class="status-box">
-            <p style="margin:0 0 10px 0; font-weight:bold; border-bottom:1px solid #000;">SYSTEM STATUS</p>
-            <div id="info-text">Sequence Ready. Press [→] to begin.</div>
+            <p style="margin:0 0 10px 0; font-weight:bold; border-bottom:1px solid #000; font-size: 12px;">SYSTEM STATUS</p>
+            <div id="info-text">Sequence Ready. Press [→] or Tap Right to begin.</div>
         </div>
     </div>
-    <div class="controls-hint">ARROWS: EVOLVE/REVERT | MOUSE: INSPECT</div>
+    <div class="controls-hint">ARROWS/TAP: EVOLVE<br>MOUSE/TOUCH: INSPECT</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -38,6 +46,8 @@
         camera.position.set(10, 10, 10);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
+        // Ajuste para nitidez en celulares (Pantallas Retina/OLED)
+        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
